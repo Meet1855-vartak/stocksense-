@@ -9,6 +9,7 @@ import Products from './pages/Products'
 import StockEntry from './pages/StockEntry'
 import Sales from './pages/Sales'
 import Insights from './pages/Insights'
+import Contact from './pages/Contact'
 
 
 
@@ -60,6 +61,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/contact" element={<Contact />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

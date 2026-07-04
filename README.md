@@ -121,9 +121,6 @@ Visit `http://localhost:5173`
 
 ## 📸 Screenshots
 
-> _Add screenshots below after deployment — e.g. Landing Page, Dashboard, Products, Stock Entry (photo scan), Sales (receipt scan), Analytics Dashboard, AI Insights, dark mode view._
-
-
 Landing Page
 <img width="1919" height="913" alt="image" src="https://github.com/user-attachments/assets/4eea4ef7-bcbe-4f90-b560-14ccc78afde6" />
 

@@ -17,10 +17,13 @@ export default function Sales() {
   const [imagePreview, setImagePreview] = useState(null)
   const [scanning, setScanning] = useState(false)
   const [scanResults, setScanResults] = useState([])
-  const [creatingProductFor, setCreatingProductFor] = useState(null) // tracks which item index is being created
+  const [creatingProductFor, setCreatingProductFor] = useState(null)
 
   const fetchProducts = async () => {
-    const { data } = await supabase.from('products').select('id, name, price, quantity').order('name')
+    const { data } = await supabase
+      .from('products')
+      .select('id, name, price, quantity, reorder_threshold')
+      .order('name')
     setProducts(data || [])
   }
 
@@ -82,10 +85,16 @@ export default function Sales() {
     const { error: itemsError } = await supabase.from('sale_items').insert(saleItems)
     if (itemsError) { setError(itemsError.message); return }
 
+    const lowStockItems = []
+
     for (const item of cart) {
       const product = products.find((p) => p.id === item.product_id)
       const newQty = product.quantity - item.quantity
       await supabase.from('products').update({ quantity: newQty }).eq('id', item.product_id)
+
+      if (newQty <= product.reorder_threshold) {
+        lowStockItems.push({ name: product.name, quantity: newQty, threshold: product.reorder_threshold })
+      }
     }
 
     setSuccess('Sale recorded successfully!')
@@ -93,6 +102,38 @@ export default function Sales() {
     setScanResults([])
     fetchProducts()
     fetchSalesHistory()
+
+    // Send low-stock alert email if needed
+    if (lowStockItems.length > 0) {
+      const html = `
+        <h2>Low Stock Alert — StockSense</h2>
+        <p>The following products are at or below their reorder threshold after your latest sale:</p>
+        <ul>
+          ${lowStockItems.map((i) => `<li><strong>${i.name}</strong>: ${i.quantity} left (reorder at ${i.threshold})</li>`).join('')}
+        </ul>
+        <p>Consider restocking soon.</p>
+      `
+
+      try {
+        const { data: sessionData } = await supabase.auth.getSession()
+        const token = sessionData.session.access_token
+
+        await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            to: user.email,
+            subject: `Low Stock Alert — ${lowStockItems.length} item(s) need restocking`,
+            html,
+          }),
+        })
+      } catch (err) {
+        console.log('Low stock email failed:', err)
+      }
+    }
   }
 
   // ---- Receipt scan logic ----
@@ -157,7 +198,6 @@ export default function Sales() {
     }
   }
 
-  // Checks for a matching product; returns match or null
   const findMatch = (itemName) =>
     products.find((p) => p.name.toLowerCase() === itemName.toLowerCase())
 
@@ -180,7 +220,6 @@ export default function Sales() {
     }])
   }
 
-  // Creates a new product on the fly from a detected receipt item (uses OCR'd price as starting price)
   const handleCreateProductFromReceipt = async (item, index) => {
     setCreatingProductFor(index)
     setError('')

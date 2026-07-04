@@ -22,6 +22,10 @@ export default function Dashboard() {
       <br />
       <Link to="/insights">AI Insights</Link>
       <br />
+      <Link to="/reports">Reports</Link>
+      <br />
+      <Link to="/analytics">Analytics</Link>
+      <br />
       <button onClick={handleLogout}>Logout</button>
     </div>
   )

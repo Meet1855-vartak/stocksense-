@@ -10,6 +10,8 @@ import StockEntry from './pages/StockEntry'
 import Sales from './pages/Sales'
 import Insights from './pages/Insights'
 import Contact from './pages/Contact'
+import Reports from './pages/Reports'
+import Analytics from './pages/Analytics'
 
 
 
@@ -62,6 +64,22 @@ function App() {
             }
           />
           <Route path="/contact" element={<Contact />} />
+          <Route
+            path="/reports"
+            element={
+              <ProtectedRoute>
+                <Reports />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/analytics"
+            element={
+              <ProtectedRoute>
+                <Analytics />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

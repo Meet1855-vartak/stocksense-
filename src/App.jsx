@@ -8,6 +8,7 @@ import Landing from './pages/Landing'     // create a placeholder for now
 import Products from './pages/Products'
 import StockEntry from './pages/StockEntry'
 import Sales from './pages/Sales'
+import Insights from './pages/Insights'
 
 
 
@@ -48,6 +49,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Sales />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/insights"
+            element={
+              <ProtectedRoute>
+                <Insights />
               </ProtectedRoute>
             }
           />

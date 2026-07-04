@@ -12,7 +12,6 @@ export default function Sales() {
   const [success, setSuccess] = useState('')
   const [salesHistory, setSalesHistory] = useState([])
 
-  // receipt scan state
   const [imageFile, setImageFile] = useState(null)
   const [imagePreview, setImagePreview] = useState(null)
   const [scanning, setScanning] = useState(false)
@@ -57,9 +56,7 @@ export default function Sales() {
     setSelectedQty('')
   }
 
-  const removeFromCart = (index) => {
-    setCart(cart.filter((_, i) => i !== index))
-  }
+  const removeFromCart = (index) => setCart(cart.filter((_, i) => i !== index))
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
@@ -103,7 +100,6 @@ export default function Sales() {
     fetchProducts()
     fetchSalesHistory()
 
-    // Send low-stock alert email if needed
     if (lowStockItems.length > 0) {
       const html = `
         <h2>Low Stock Alert — StockSense</h2>
@@ -113,17 +109,12 @@ export default function Sales() {
         </ul>
         <p>Consider restocking soon.</p>
       `
-
       try {
         const { data: sessionData } = await supabase.auth.getSession()
         const token = sessionData.session.access_token
-
         await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({
             to: user.email,
             subject: `Low Stock Alert — ${lowStockItems.length} item(s) need restocking`,
@@ -136,7 +127,6 @@ export default function Sales() {
     }
   }
 
-  // ---- Receipt scan logic ----
   const handleImageChange = (e) => {
     const file = e.target.files[0]
     if (!file) return
@@ -167,10 +157,7 @@ export default function Sales() {
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-receipt`,
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ imageBase64: base64 }),
         }
       )
@@ -186,11 +173,8 @@ export default function Sales() {
         return
       }
 
-      if (result.error) {
-        setError(result.error)
-      } else {
-        setScanResults(result.items || [])
-      }
+      if (result.error) setError(result.error)
+      else setScanResults(result.items || [])
     } catch (err) {
       setError('Failed to analyze receipt: ' + err.message)
     } finally {
@@ -212,12 +196,7 @@ export default function Sales() {
       return
     }
     setError('')
-    setCart([...cart, {
-      product_id: match.id,
-      name: match.name,
-      price: match.price,
-      quantity: item.quantity,
-    }])
+    setCart([...cart, { product_id: match.id, name: match.name, price: match.price, quantity: item.quantity }])
   }
 
   const handleCreateProductFromReceipt = async (item, index) => {
@@ -237,120 +216,241 @@ export default function Sales() {
       .select()
       .single()
 
-    if (error) {
-      setError(error.message)
-    } else {
-      await fetchProducts()
-    }
+    if (error) setError(error.message)
+    else await fetchProducts()
     setCreatingProductFor(null)
   }
 
   return (
     <div>
-      <h1>Record Sale</h1>
-
-      <div>
-        <select value={selectedProduct} onChange={(e) => setSelectedProduct(e.target.value)}>
-          <option value="">Select Product</option>
-          {products.map((p) => (
-            <option key={p.id} value={p.id}>{p.name} — ₹{p.price} (stock: {p.quantity})</option>
-          ))}
-        </select>
-        <input type="number" placeholder="Quantity" value={selectedQty} onChange={(e) => setSelectedQty(e.target.value)} />
-        <button type="button" onClick={addToCart}>Add to Cart</button>
+      <div style={styles.header}>
+        <h1 style={styles.title}>Record Sale</h1>
+        <p style={styles.subtitle}>Add items manually or scan a receipt</p>
       </div>
 
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {success && <p style={{ color: 'green' }}>{success}</p>}
+      <div style={styles.formCard}>
+        <div style={styles.form}>
+          <select style={styles.input} value={selectedProduct} onChange={(e) => setSelectedProduct(e.target.value)}>
+            <option value="">Select Product</option>
+            {products.map((p) => (
+              <option key={p.id} value={p.id}>{p.name} — ₹{p.price} (stock: {p.quantity})</option>
+            ))}
+          </select>
+          <input style={styles.input} type="number" placeholder="Quantity" value={selectedQty} onChange={(e) => setSelectedQty(e.target.value)} />
+          <button type="button" onClick={addToCart} style={styles.primaryBtn}>Add to Cart</button>
+        </div>
+      </div>
 
-      <div style={{ marginTop: '30px', padding: '15px', border: '1px dashed #999' }}>
-        <h3>Scan Receipt (AI-assisted)</h3>
-        <input type="file" accept="image/*" capture="environment" onChange={handleImageChange} />
+      {error && <p style={styles.error}>{error}</p>}
+      {success && <p style={styles.success}>{success}</p>}
+
+      <div style={styles.scanCard}>
+        <h3 style={styles.formTitle}>🧾 Scan Receipt (AI-assisted)</h3>
+        <input type="file" accept="image/*" capture="environment" onChange={handleImageChange} style={styles.fileInput} />
         {imagePreview && (
-          <div style={{ marginTop: '10px' }}>
-            <img src={imagePreview} alt="preview" style={{ maxWidth: '300px' }} />
+          <div style={{ marginTop: '14px' }}>
+            <img src={imagePreview} alt="preview" style={styles.previewImg} />
             <br />
-            <button onClick={handleScanReceipt} disabled={scanning}>
+            <button onClick={handleScanReceipt} disabled={scanning} style={{ ...styles.primaryBtn, marginTop: '12px' }}>
               {scanning ? 'Analyzing...' : 'Analyze Receipt'}
             </button>
           </div>
         )}
 
         {scanResults.length > 0 && (
-          <div style={{ marginTop: '15px' }}>
-            <h4>Detected Items:</h4>
-            <table border="1" cellPadding="6">
-              <thead>
-                <tr><th>Name</th><th>Qty</th><th>Price (OCR)</th><th>Action</th></tr>
-              </thead>
-              <tbody>
-                {scanResults.map((item, i) => {
-                  const match = findMatch(item.name)
-                  return (
-                    <tr key={i}>
-                      <td>{item.name}</td>
-                      <td>{item.quantity}</td>
-                      <td>₹{item.price}</td>
-                      <td>
-                        {match ? (
-                          <button onClick={() => addDetectedItemToCart(item)}>Add to Cart</button>
-                        ) : (
-                          <button
-                            onClick={() => handleCreateProductFromReceipt(item, i)}
-                            disabled={creatingProductFor === i}
-                          >
-                            {creatingProductFor === i ? 'Creating...' : `+ Add "${item.name}" as new product`}
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-            <p style={{ fontSize: '0.9em', color: '#666' }}>
-              Matches items by name to your existing products and uses your stored price for accuracy. New products start with 0 stock — add stock via Stock Entry before selling them.
-            </p>
+          <div style={{ marginTop: '20px' }}>
+            <h4 style={{ color: 'var(--text)', marginBottom: '10px' }}>Detected Items:</h4>
+            <div style={styles.tableCard}>
+              <table style={styles.table}>
+                <thead>
+                  <tr>
+                    <th style={styles.th}>Name</th>
+                    <th style={styles.th}>Qty</th>
+                    <th style={styles.th}>Price (OCR)</th>
+                    <th style={styles.th}>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {scanResults.map((item, i) => {
+                    const match = findMatch(item.name)
+                    return (
+                      <tr key={i}>
+                        <td style={styles.td}>{item.name}</td>
+                        <td style={styles.td}>{item.quantity}</td>
+                        <td style={styles.td}>₹{item.price}</td>
+                        <td style={styles.td}>
+                          {match ? (
+                            <button onClick={() => addDetectedItemToCart(item)} style={styles.smallPrimaryBtn}>Add to Cart</button>
+                          ) : (
+                            <button
+                              onClick={() => handleCreateProductFromReceipt(item, i)}
+                              disabled={creatingProductFor === i}
+                              style={styles.smallPrimaryBtn}
+                            >
+                              {creatingProductFor === i ? 'Creating...' : `+ Add as new product`}
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <p style={styles.hint}>New products start with 0 stock — add stock via Stock Entry before selling.</p>
           </div>
         )}
       </div>
 
-      <h3 style={{ marginTop: '20px' }}>Cart</h3>
-      <table border="1" cellPadding="8" style={{ width: '100%' }}>
-        <thead>
-          <tr><th>Product</th><th>Qty</th><th>Price</th><th>Subtotal</th><th></th></tr>
-        </thead>
-        <tbody>
-          {cart.map((item, i) => (
-            <tr key={i}>
-              <td>{item.name}</td>
-              <td>{item.quantity}</td>
-              <td>₹{item.price}</td>
-              <td>₹{(item.price * item.quantity).toFixed(2)}</td>
-              <td><button onClick={() => removeFromCart(i)}>Remove</button></td>
+      <h2 style={styles.sectionTitle}>Cart</h2>
+      <div style={styles.tableCard}>
+        <table style={styles.table}>
+          <thead>
+            <tr>
+              <th style={styles.th}>Product</th>
+              <th style={styles.th}>Qty</th>
+              <th style={styles.th}>Price</th>
+              <th style={styles.th}>Subtotal</th>
+              <th style={styles.th}></th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {cart.map((item, i) => (
+              <tr key={i}>
+                <td style={styles.td}>{item.name}</td>
+                <td style={styles.td}>{item.quantity}</td>
+                <td style={styles.td}>₹{item.price}</td>
+                <td style={styles.td}>₹{(item.price * item.quantity).toFixed(2)}</td>
+                <td style={styles.td}><button onClick={() => removeFromCart(i)} style={styles.deleteBtn}>Remove</button></td>
+              </tr>
+            ))}
+            {cart.length === 0 && (
+              <tr><td colSpan="5" style={styles.emptyCell}>Cart is empty — add products above.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
-      <h3>Total: ₹{total.toFixed(2)}</h3>
-      <button onClick={handleCompleteSale} disabled={cart.length === 0}>Complete Sale</button>
+      <div style={styles.totalBar}>
+        <span style={styles.totalLabel}>Total: <strong style={{ color: 'var(--success)' }}>₹{total.toFixed(2)}</strong></span>
+        <button onClick={handleCompleteSale} disabled={cart.length === 0} style={styles.primaryBtn}>Complete Sale</button>
+      </div>
 
-      <h2 style={{ marginTop: '30px' }}>Recent Sales</h2>
-      <table border="1" cellPadding="8" style={{ width: '100%' }}>
-        <thead>
-          <tr><th>Date</th><th>Items</th><th>Total</th></tr>
-        </thead>
-        <tbody>
-          {salesHistory.map((s) => (
-            <tr key={s.id}>
-              <td>{new Date(s.created_at).toLocaleString()}</td>
-              <td>{s.sale_items.map((si) => `${si.products?.name} x${si.quantity}`).join(', ')}</td>
-              <td>₹{s.total_amount}</td>
+      <h2 style={styles.sectionTitle}>Recent Sales</h2>
+      <div style={styles.tableCard}>
+        <table style={styles.table}>
+          <thead>
+            <tr>
+              <th style={styles.th}>Date</th>
+              <th style={styles.th}>Items</th>
+              <th style={styles.th}>Total</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {salesHistory.map((s) => (
+              <tr key={s.id}>
+                <td style={styles.td}>{new Date(s.created_at).toLocaleString()}</td>
+                <td style={styles.td}>{s.sale_items.map((si) => `${si.products?.name} x${si.quantity}`).join(', ')}</td>
+                <td style={styles.td}>₹{s.total_amount}</td>
+              </tr>
+            ))}
+            {salesHistory.length === 0 && (
+              <tr><td colSpan="3" style={styles.emptyCell}>No sales recorded yet.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
+}
+
+const styles = {
+  header: { marginBottom: '24px' },
+  title: { fontSize: '1.8rem', fontWeight: 700, margin: 0, color: 'var(--text)' },
+  subtitle: { color: 'var(--text-muted)', marginTop: '4px' },
+  formCard: {
+    background: 'var(--bg-elevated)',
+    borderRadius: '14px',
+    padding: '22px',
+    boxShadow: 'var(--shadow)',
+    marginBottom: '20px',
+  },
+  formTitle: { margin: '0 0 16px', fontSize: '1.1rem', color: 'var(--text)' },
+  form: { display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' },
+  input: { minWidth: '160px', flex: '1 1 160px' },
+  primaryBtn: {
+    background: 'var(--primary)',
+    color: '#fff',
+    border: 'none',
+    padding: '10px 20px',
+    borderRadius: '8px',
+    fontWeight: 600,
+  },
+  smallPrimaryBtn: {
+    background: 'var(--primary-soft)',
+    color: 'var(--primary)',
+    border: 'none',
+    padding: '6px 14px',
+    borderRadius: '6px',
+    fontWeight: 500,
+    fontSize: '0.9rem',
+  },
+  deleteBtn: {
+    background: 'transparent',
+    color: 'var(--danger)',
+    border: '1px solid var(--danger)',
+    padding: '6px 12px',
+    borderRadius: '6px',
+    fontSize: '0.85rem',
+  },
+  error: { color: 'var(--danger)', marginBottom: '16px' },
+  success: { color: 'var(--success)', marginBottom: '16px' },
+  hint: { fontSize: '0.85em', color: 'var(--text-muted)', marginTop: '10px' },
+  scanCard: {
+    background: 'var(--bg-elevated)',
+    borderRadius: '14px',
+    padding: '22px',
+    boxShadow: 'var(--shadow)',
+    marginBottom: '30px',
+    border: '1px dashed var(--border)',
+  },
+  fileInput: { color: 'var(--text)' },
+  previewImg: { maxWidth: '280px', borderRadius: '10px', boxShadow: 'var(--shadow)' },
+  sectionTitle: { fontSize: '1.3rem', fontWeight: 700, marginBottom: '16px', color: 'var(--text)', marginTop: '10px' },
+  tableCard: {
+    background: 'var(--bg-elevated)',
+    borderRadius: '14px',
+    boxShadow: 'var(--shadow)',
+    overflow: 'hidden',
+    marginBottom: '30px',
+  },
+  table: { width: '100%', borderCollapse: 'collapse' },
+  th: {
+    textAlign: 'left',
+    padding: '14px 16px',
+    color: 'var(--text-muted)',
+    fontSize: '0.85rem',
+    fontWeight: 600,
+    borderBottom: '1px solid var(--border)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.03em',
+  },
+  td: {
+    padding: '14px 16px',
+    color: 'var(--text)',
+    borderBottom: '1px solid var(--border)',
+    fontSize: '0.95rem',
+  },
+  emptyCell: { textAlign: 'center', padding: '30px', color: 'var(--text-muted)' },
+  totalBar: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    background: 'var(--bg-elevated)',
+    borderRadius: '14px',
+    padding: '18px 22px',
+    boxShadow: 'var(--shadow)',
+    marginBottom: '30px',
+  },
+  totalLabel: { fontSize: '1.1rem', color: 'var(--text)' },
 }

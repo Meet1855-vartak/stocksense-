@@ -8,6 +8,7 @@ const navItems = [
   { to: '/analytics', label: 'Analytics', icon: '📊' },
   { to: '/insights', label: 'AI Insights', icon: '🤖' },
   { to: '/reports', label: 'Reports', icon: '📧' },
+  { to: '/contact', label: 'Contact Us', icon: '✉️' },
 ]
 
 export default function Sidebar() {
@@ -33,9 +34,9 @@ export default function Sidebar() {
 const styles = {
   sidebar: {
     width: '220px',
-    minHeight: 'calc(100vh - 58px)', // full height minus navbar
-    background: '#fff',
-    borderRight: '1px solid #e2e8f0',
+    minHeight: 'calc(100vh - 58px)',
+    background: 'var(--bg-elevated)',
+    borderRight: '1px solid var(--border)',
     padding: '20px 12px',
     display: 'flex',
     flexDirection: 'column',
@@ -46,15 +47,15 @@ const styles = {
     alignItems: 'center',
     padding: '10px 14px',
     borderRadius: '8px',
-    color: '#475569',
+    color: 'var(--text-muted)',
     textDecoration: 'none',
     fontSize: '0.95rem',
     fontWeight: 500,
     transition: 'background 0.15s ease',
   },
   activeLink: {
-    background: '#eef2ff',
-    color: '#6366f1',
+    background: 'var(--primary-soft)',
+    color: 'var(--primary)',
     fontWeight: 600,
   },
 }

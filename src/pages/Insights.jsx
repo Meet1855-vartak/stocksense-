@@ -43,23 +43,14 @@ export default function Insights() {
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-insights`,
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            question,
-            context: { products, recent_sales: sales },
-          }),
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ question, context: { products, recent_sales: sales } }),
         }
       )
 
       const result = await res.json()
-      if (result.error) {
-        setError(result.error)
-      } else {
-        setAnswer(result.answer)
-      }
+      if (result.error) setError(result.error)
+      else setAnswer(result.answer)
     } catch (err) {
       setError('Failed to get insight: ' + err.message)
     } finally {
@@ -76,43 +67,82 @@ export default function Insights() {
 
   return (
     <div>
-      <h1>AI Insights</h1>
-      <p>Ask questions about your inventory and sales in plain language.</p>
-
-      <form onSubmit={handleAsk}>
-        <input
-          type="text"
-          placeholder="Ask something, e.g. 'What should I reorder?'"
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          style={{ width: '400px' }}
-        />
-        <button type="submit" disabled={loading}>
-          {loading ? 'Thinking...' : 'Ask'}
-        </button>
-      </form>
-
-      <div style={{ marginTop: '10px' }}>
-        {quickQuestions.map((q) => (
-          <button
-            key={q}
-            type="button"
-            onClick={() => setQuestion(q)}
-            style={{ marginRight: '8px', marginBottom: '8px' }}
-          >
-            {q}
-          </button>
-        ))}
+      <div style={styles.header}>
+        <h1 style={styles.title}>🤖 AI Insights</h1>
+        <p style={styles.subtitle}>Ask questions about your inventory and sales in plain language</p>
       </div>
 
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <div style={styles.card}>
+        <form onSubmit={handleAsk} style={styles.form}>
+          <input
+            style={styles.input}
+            type="text"
+            placeholder="Ask something, e.g. 'What should I reorder?'"
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+          />
+          <button type="submit" disabled={loading} style={styles.primaryBtn}>
+            {loading ? 'Thinking...' : 'Ask'}
+          </button>
+        </form>
 
-      {answer && (
-        <div style={{ marginTop: '20px', padding: '15px', background: '#eef', borderRadius: '6px' }}>
-          <strong>AI Insight:</strong>
-          <p>{answer}</p>
+        <div style={styles.quickRow}>
+          {quickQuestions.map((q) => (
+            <button key={q} type="button" onClick={() => setQuestion(q)} style={styles.quickBtn}>
+              {q}
+            </button>
+          ))}
         </div>
-      )}
+
+        {error && <p style={styles.error}>{error}</p>}
+
+        {answer && (
+          <div style={styles.answerBox}>
+            <strong style={{ color: 'var(--primary)' }}>AI Insight</strong>
+            <p style={{ margin: '8px 0 0', color: 'var(--text)', lineHeight: 1.6 }}>{answer}</p>
+          </div>
+        )}
+      </div>
     </div>
   )
+}
+
+const styles = {
+  header: { marginBottom: '24px' },
+  title: { fontSize: '1.8rem', fontWeight: 700, margin: 0, color: 'var(--text)' },
+  subtitle: { color: 'var(--text-muted)', marginTop: '4px' },
+  card: {
+    background: 'var(--bg-elevated)',
+    borderRadius: '14px',
+    padding: '26px',
+    boxShadow: 'var(--shadow)',
+  },
+  form: { display: 'flex', gap: '12px', flexWrap: 'wrap' },
+  input: { flex: '1 1 300px' },
+  primaryBtn: {
+    background: 'var(--primary)',
+    color: '#fff',
+    border: 'none',
+    padding: '10px 24px',
+    borderRadius: '8px',
+    fontWeight: 600,
+  },
+  quickRow: { display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '16px' },
+  quickBtn: {
+    background: 'var(--primary-soft)',
+    color: 'var(--primary)',
+    border: 'none',
+    padding: '8px 14px',
+    borderRadius: '20px',
+    fontSize: '0.85rem',
+    fontWeight: 500,
+  },
+  error: { color: 'var(--danger)', marginTop: '16px' },
+  answerBox: {
+    background: 'var(--bg)',
+    border: '1px solid var(--border)',
+    borderRadius: '12px',
+    padding: '20px',
+    marginTop: '20px',
+  },
 }

@@ -34,16 +34,12 @@ export default function Analytics() {
     return (
       <div style={styles.loadingWrap}>
         <div style={styles.spinner} />
-        <p>Loading analytics...</p>
+        <p style={{ color: 'var(--text-muted)' }}>Loading analytics...</p>
       </div>
     )
   }
 
-  const stockData = products.map((p) => ({
-    name: p.name,
-    quantity: p.quantity,
-    threshold: p.reorder_threshold,
-  }))
+  const stockData = products.map((p) => ({ name: p.name, quantity: p.quantity, threshold: p.reorder_threshold }))
 
   const itemSales = {}
   sales.forEach((s) => {
@@ -78,26 +74,24 @@ export default function Analytics() {
   const avgSale = totalSales > 0 ? totalRevenue / totalSales : 0
 
   return (
-    <div style={styles.page}>
+    <div>
       <div style={styles.header}>
         <h1 style={styles.title}>📊 Analytics Dashboard</h1>
         <p style={styles.subtitle}>Real-time overview of your shop's performance</p>
       </div>
 
-      {/* Summary cards */}
       <div style={styles.cardGrid}>
-        <SummaryCard label="Total Revenue" value={`₹${totalRevenue.toFixed(2)}`} icon="💰" color="#6366f1" />
-        <SummaryCard label="Total Sales" value={totalSales} icon="🧾" color="#22c55e" />
-        <SummaryCard label="Avg. Sale Value" value={`₹${avgSale.toFixed(2)}`} icon="📈" color="#f59e0b" />
+        <SummaryCard label="Total Revenue" value={`₹${totalRevenue.toFixed(2)}`} icon="💰" color="var(--primary)" />
+        <SummaryCard label="Total Sales" value={totalSales} icon="🧾" color="var(--success)" />
+        <SummaryCard label="Avg. Sale Value" value={`₹${avgSale.toFixed(2)}`} icon="📈" color="var(--warning)" />
         <SummaryCard
           label="Low Stock Items"
           value={lowStockCount}
           icon="⚠️"
-          color={lowStockCount > 0 ? '#ef4444' : '#22c55e'}
+          color={lowStockCount > 0 ? 'var(--danger)' : 'var(--success)'}
         />
       </div>
 
-      {/* Stock levels */}
       <ChartCard title="📦 Stock Levels vs Reorder Threshold">
         <ResponsiveContainer width="100%" height={320}>
           <BarChart data={stockData} barGap={4}>
@@ -111,9 +105,9 @@ export default function Analytics() {
                 <stop offset="100%" stopColor="#ef4444" stopOpacity={0.4} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
-            <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-            <YAxis tick={{ fontSize: 12 }} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+            <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
+            <YAxis tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
             <Tooltip contentStyle={styles.tooltip} />
             <Legend />
             <Bar dataKey="quantity" fill="url(#stockGrad)" name="Current Stock" radius={[6, 6, 0, 0]} />
@@ -122,7 +116,6 @@ export default function Analytics() {
         </ResponsiveContainer>
       </ChartCard>
 
-      {/* Revenue trend */}
       <ChartCard title="📈 Revenue Over Time">
         {revenueTrend.length > 0 ? (
           <ResponsiveContainer width="100%" height={320}>
@@ -133,9 +126,9 @@ export default function Analytics() {
                   <stop offset="100%" stopColor="#22c55e" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
-              <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="date" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
+              <YAxis tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
               <Tooltip contentStyle={styles.tooltip} />
               <Area type="monotone" dataKey="amount" stroke="#22c55e" strokeWidth={3} fill="url(#revGrad)" name="Revenue (₹)" />
             </AreaChart>
@@ -146,14 +139,13 @@ export default function Analytics() {
       </ChartCard>
 
       <div style={styles.twoCol}>
-        {/* Best sellers */}
         <ChartCard title="🏆 Top 5 Best Sellers">
           {bestSellers.length > 0 ? (
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={bestSellers} layout="vertical" margin={{ left: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
-                <XAxis type="number" tick={{ fontSize: 12 }} />
-                <YAxis dataKey="name" type="category" width={90} tick={{ fontSize: 12 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
+                <YAxis dataKey="name" type="category" width={90} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
                 <Tooltip contentStyle={styles.tooltip} />
                 <Bar dataKey="quantity" name="Units Sold" radius={[0, 6, 6, 0]}>
                   {bestSellers.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
@@ -165,14 +157,13 @@ export default function Analytics() {
           )}
         </ChartCard>
 
-        {/* Worst sellers */}
         <ChartCard title="🐌 Bottom 5 Sellers">
           {worstSellers.length > 0 ? (
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={worstSellers} layout="vertical" margin={{ left: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
-                <XAxis type="number" tick={{ fontSize: 12 }} />
-                <YAxis dataKey="name" type="category" width={90} tick={{ fontSize: 12 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
+                <YAxis dataKey="name" type="category" width={90} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
                 <Tooltip contentStyle={styles.tooltip} />
                 <Bar dataKey="quantity" fill="#f59e0b" name="Units Sold" radius={[0, 6, 6, 0]} />
               </BarChart>
@@ -183,7 +174,6 @@ export default function Analytics() {
         </ChartCard>
       </div>
 
-      {/* Revenue by category */}
       <ChartCard title="🥧 Revenue by Category">
         {categoryData.length > 0 ? (
           <ResponsiveContainer width="100%" height={340}>
@@ -200,7 +190,7 @@ export default function Analytics() {
                 label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
               >
                 {categoryData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="#fff" strokeWidth={2} />
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="var(--bg-elevated)" strokeWidth={2} />
                 ))}
               </Pie>
               <Tooltip contentStyle={styles.tooltip} formatter={(value) => `₹${value.toFixed(2)}`} />
@@ -237,23 +227,13 @@ function ChartCard({ title, children }) {
 }
 
 function EmptyState({ text }) {
-  return (
-    <div style={styles.empty}>
-      <p>{text}</p>
-    </div>
-  )
+  return <div style={styles.empty}><p>{text}</p></div>
 }
 
 const styles = {
-  page: {
-    padding: '30px',
-    maxWidth: '1200px',
-    margin: '0 auto',
-    fontFamily: 'system-ui, sans-serif',
-  },
   header: { marginBottom: '30px' },
-  title: { fontSize: '2rem', margin: 0, fontWeight: 700 },
-  subtitle: { color: '#888', marginTop: '4px' },
+  title: { fontSize: '1.8rem', margin: 0, fontWeight: 700, color: 'var(--text)' },
+  subtitle: { color: 'var(--text-muted)', marginTop: '4px' },
   cardGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
@@ -261,40 +241,37 @@ const styles = {
     marginBottom: '35px',
   },
   card: {
-    background: '#fff',
+    background: 'var(--bg-elevated)',
     borderRadius: '14px',
     padding: '20px',
-    boxShadow: '0 2px 10px rgba(0,0,0,0.06)',
-    transition: 'transform 0.2s ease',
+    boxShadow: 'var(--shadow)',
   },
   cardTop: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' },
   cardIcon: { fontSize: '1.3rem' },
-  cardLabel: { color: '#666', fontSize: '0.9rem', fontWeight: 500 },
+  cardLabel: { color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: 500 },
   cardValue: { fontSize: '1.8rem', fontWeight: 700, margin: 0 },
   chartCard: {
-    background: '#fff',
+    background: 'var(--bg-elevated)',
     borderRadius: '16px',
     padding: '24px',
-    boxShadow: '0 2px 10px rgba(0,0,0,0.06)',
+    boxShadow: 'var(--shadow)',
     marginBottom: '30px',
   },
-  chartTitle: { fontSize: '1.2rem', marginBottom: '15px', fontWeight: 600 },
-  twoCol: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '25px',
-  },
+  chartTitle: { fontSize: '1.2rem', marginBottom: '15px', fontWeight: 600, color: 'var(--text)' },
+  twoCol: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '25px' },
   tooltip: {
     borderRadius: '10px',
-    border: 'none',
+    border: '1px solid var(--border)',
     boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+    background: 'var(--bg-elevated)',
+    color: 'var(--text)',
   },
   empty: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     height: '200px',
-    color: '#aaa',
+    color: 'var(--text-muted)',
   },
   loadingWrap: {
     display: 'flex',
@@ -307,8 +284,8 @@ const styles = {
   spinner: {
     width: '36px',
     height: '36px',
-    border: '4px solid #eee',
-    borderTop: '4px solid #6366f1',
+    border: '4px solid var(--border)',
+    borderTop: '4px solid var(--primary)',
     borderRadius: '50%',
     animation: 'spin 0.8s linear infinite',
   },

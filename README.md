@@ -8,7 +8,7 @@ StockSense is an AI-powered inventory and sales management platform built for sm
 
 ## 🌐 Live Demo
 
-- **Live URL:** _[add your deployed Vercel URL here after deployment]_
+- **Live URL:** https://stocksense-inventory.vercel.app
 - **GitHub Repo:** https://github.com/Meet1855-vartak/stocksense-
 
 ---

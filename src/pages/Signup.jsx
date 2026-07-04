@@ -14,7 +14,7 @@ export default function Signup() {
     setError('')
     const { error } = await signUp(email, password)
     if (error) setError(error.message)
-    else navigate('/dashboard')
+    else navigate('/')
   }
 
   return (

@@ -14,7 +14,7 @@ export default function Login() {
     setError('')
     const { error } = await signIn(email, password)
     if (error) setError(error.message)
-    else navigate('/dashboard')
+    else navigate('/')
   }
 
   return (

@@ -18,6 +18,7 @@ export default function StockEntry() {
   const [detectedName, setDetectedName] = useState('')
   const [productExists, setProductExists] = useState(true)
   const [creatingProduct, setCreatingProduct] = useState(false)
+  const [entrySource, setEntrySource] = useState('manual')
 
   const fetchProducts = async () => {
     const { data } = await supabase.from('products').select('id, name, quantity').order('name')
@@ -47,7 +48,7 @@ export default function StockEntry() {
     const { error: entryError } = await supabase.from('stock_entries').insert({
       product_id: productId,
       quantity_added: parseInt(quantityAdded),
-      source: 'manual',
+      source: entrySource,
     })
     if (entryError) { setError(entryError.message); return }
 
@@ -62,6 +63,7 @@ export default function StockEntry() {
     setProductId('')
     setQuantityAdded('')
     setDetectedName('')
+    setEntrySource('manual')
     fetchProducts()
     fetchEntries()
   }
@@ -125,6 +127,7 @@ export default function StockEntry() {
   const applyScanResult = (item) => {
     setDetectedName(item.name)
     setQuantityAdded(String(item.estimated_quantity))
+    setEntrySource('photo')
 
     const match = products.find((p) => p.name.toLowerCase() === item.name.toLowerCase())
     if (match) {
@@ -187,7 +190,7 @@ export default function StockEntry() {
           </div>
         )}
         <form onSubmit={handleSubmit} style={styles.form}>
-          <select style={styles.input} value={productId} onChange={(e) => setProductId(e.target.value)} required>
+          <select style={styles.input} value={productId} onChange={(e) => { setProductId(e.target.value); setEntrySource('manual') }} required>
             <option value="">Select Product</option>
             {products.map((p) => (
               <option key={p.id} value={p.id}>{p.name} (current: {p.quantity})</option>
